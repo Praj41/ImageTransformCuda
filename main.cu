@@ -3,12 +3,13 @@
 
 #include "lodepng.h"
 #include "Pixel.h"
+#include "PNG.cuh"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
 
     int x(256) , y(256);
-
+/*
     std::vector<uint32_t> arr(x * y);
 
     for (int i = 0; i < x; ++i) {
@@ -25,6 +26,13 @@ int main() {
     }
 
     lodepng::encode("../pattern.png", (unsigned char*)arr.data(), x, y);
+*/
+
+    praj::PNGpu png(x, y);
+
+    png.readFile("../pattern.png");
+
+    png.writeFile("../pattern1.png");
 
     return 0;
 }
