@@ -11,18 +11,20 @@ namespace praj {
             : width_(0),
               height_(0) {}
 
-    PNGpu::PNGpu(unsigned int width, unsigned int height) : width_(width), height_(height) {}
+    PNGpu::PNGpu(unsigned int width, unsigned int height)
+            : width_(width),
+              height_(height) {}
 
     bool PNGpu::readFile(const std::string &fileName) {
         std::vector<unsigned char> data;
         unsigned int error = lodepng::decode(data, width_, height_, fileName);
         rgbaImage_.resize(width_ * height_);
-        memcpy((void*)rgbaImage_.data(), (void*)data.data(), width_ * height_ * 4);
+        memcpy((void *) rgbaImage_.data(), (void *) data.data(), width_ * height_ * 4);
         return error;
     }
 
     bool PNGpu::writeFile(const std::string &fileName) {
-        unsigned int error = lodepng::encode(fileName, (unsigned char*)rgbaImage_.data(), width_, height_);
+        unsigned int error = lodepng::encode(fileName, (unsigned char *) rgbaImage_.data(), width_, height_);
         return error;
     }
 
@@ -73,7 +75,7 @@ namespace praj {
         hsl.s = chroma / (1 - fabs((2 * hsl.l) - 1));
 
         // Compute H
-        if (max == r) { hsl.h = fmod((g - b) / chroma, (double)6); }
+        if (max == r) { hsl.h = fmod((g - b) / chroma, (double) 6); }
         else if (max == g) { hsl.h = ((b - r) / chroma) + 2; }
         else { hsl.h = ((r - g) / chroma) + 4; }
 
@@ -96,7 +98,7 @@ namespace praj {
         } else {
             double c = (1 - fabs((2 * hsl.l) - 1)) * hsl.s;
             double hh = hsl.h / 60;
-            double x = c * (1 - fabs(fmod(hh, (double)2) - 1));
+            double x = c * (1 - fabs(fmod(hh, (double) 2) - 1));
             double r, g, b;
 
             if (hh <= 1) {
@@ -136,26 +138,28 @@ namespace praj {
 
     void PNGpu::toRGB() {
 
-        rgbaColor *in;
-        cudaMalloc((void**)&in, height_*width_*32);
-        cudaMemcpy(in, hslaImage_.data(), height_*width_*32, cudaMemcpyHostToDevice);
-        hslaColor *out;
-        cudaMalloc((void**)&out, height_*width_*4);
-        praj::rgb2hsl<<<height_, width_>>>(in, out);
-        hslaImage_.resize(height_*width_);
-        cudaMemcpy(rgbaImage_.data(), out, height_*width_*32, cudaMemcpyDeviceToHost);
+        hslaColor *in;
+        cudaMalloc((void **) &in, height_ * width_ * 32);
+        cudaMemcpy(in, hslaImage_.data(), height_ * width_ * 32, cudaMemcpyHostToDevice);
+        rgbaColor *out;
+        cudaMalloc((void **) &out, height_ * width_ * 4);
+        praj::hsl2rgb<<<height_, width_>>>(in, out);
+        rgbaImage_.resize(height_ * width_);
+        cudaMemcpy(rgbaImage_.data(), out, height_ * width_ * 32, cudaMemcpyDeviceToHost);
         std::cout << "done" << std::endl;
     }
 
     void PNGpu::toHSL() {
         rgbaColor *in;
-        cudaMalloc((void**)&in, height_*width_*4);
-        cudaMemcpy(in, rgbaImage_.data(), height_*width_*4, cudaMemcpyHostToDevice);
+        cudaMalloc((void **) &in, height_ * width_ * 4);
+        cudaMemcpy(in, rgbaImage_.data(), height_ * width_ * 4, cudaMemcpyHostToDevice);
         hslaColor *out;
-        cudaMalloc((void**)&out, height_*width_*32);
+        cudaMalloc((void **) &out, height_ * width_ * 32);
+        //dim3 block(512, 1, 1);
+        //dim3 grid(height_, width_);
         praj::rgb2hsl<<<height_, width_>>>(in, out);
-        hslaImage_.resize(height_*width_);
-        cudaMemcpy(hslaImage_.data(), out, height_*width_*32, cudaMemcpyDeviceToHost);
+        hslaImage_.resize(height_ * width_);
+        cudaMemcpy(hslaImage_.data(), out, height_ * width_ * 32, cudaMemcpyDeviceToHost);
         std::cout << "done" << std::endl;
     }
 

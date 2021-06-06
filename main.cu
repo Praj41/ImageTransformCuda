@@ -28,14 +28,12 @@ int main() {
     lodepng::encode("../pattern.png", (unsigned char*)arr.data(), x, y);
 */
 
-    praj::PNGpu png(x, y);
+    praj::PNGpu png;
 
     png.readFile("../pattern.png");
 
     png.toHSL();
     png.toRGB();
-
-
 
     png.writeFile("../pattern1.png");
 
