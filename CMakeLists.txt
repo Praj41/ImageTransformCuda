@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.17)
 project(ImageTransformGPU CUDA)
 
-set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD 14)
 
 include_directories(lodepng PNG)
 
-add_executable(ImageTransformGPU main.cu lodepng/lodepng.cu PNG/PNG.cu PNG/PNG.cuh PNG/Pixel.h)
+add_executable(ImageTransformGPU main.cu lodepng/lodepng.cu PNG/PNG.cu PNG/PNG.cuh PNG/Pixel.cuh)
 
 set_target_properties(
         ImageTransformGPU

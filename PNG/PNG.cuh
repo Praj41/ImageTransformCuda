@@ -5,7 +5,10 @@
 #include <vector>
 #include <iostream>
 
-#include "Pixel.h"
+#include <cuda.h>
+
+
+#include "Pixel.cuh"
 
 namespace praj {
 
@@ -15,10 +18,15 @@ namespace praj {
         PNGpu(unsigned int width, unsigned int height);
         bool readFile(const std::string &fileName);
         bool writeFile(const std::string &fileName);
+        void toRGB();
+        void toHSL();
+
     private:
         unsigned int width_{};
         unsigned int height_{};
-        std::vector<rgbaColor> image_;
+        std::vector<rgbaColor> rgbaImage_;
+        std::vector<hslaColor> hslaImage_;
+
     };
 }
 

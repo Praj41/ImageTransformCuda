@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
 
-#include "lodepng.h"
-#include "Pixel.h"
+#include "lodepng.cuh"
+#include "Pixel.cuh"
 #include "PNG.cuh"
 
 int main() {
@@ -14,7 +14,7 @@ int main() {
 
     for (int i = 0; i < x; ++i) {
         for (int j = 0; j < y; ++j) {
-            praj::rgbaColor pixel;
+            rgbaColor pixel;
 
             pixel.r = i;
             pixel.g = 0;
@@ -31,6 +31,11 @@ int main() {
     praj::PNGpu png(x, y);
 
     png.readFile("../pattern.png");
+
+    png.toHSL();
+    png.toRGB();
+
+
 
     png.writeFile("../pattern1.png");
 

@@ -95,7 +95,7 @@ source files with custom allocators.*/
 #endif /*LODEPNG_COMPILE_CPP*/
 
 #ifdef LODEPNG_COMPILE_PNG
-/*The PNG color types (also used for raw image).*/
+/*The PNG color types (also used for raw hslaImage).*/
 typedef enum LodePNGColorType {
   LCT_GREY = 0, /*grayscale: 1,2,4,8,16 bit*/
   LCT_RGB = 2, /*RGB: 8,16 bit*/
@@ -122,19 +122,19 @@ w: Output parameter. Pointer to width of pixel data.
 h: Output parameter. Pointer to height of pixel data.
 in: Memory buffer with the PNG file.
 insize: size of the in buffer.
-colortype: the desired color type for the raw output image. See explanation on PNG color types.
-bitdepth: the desired bit depth for the raw output image. See explanation on PNG color types.
+colortype: the desired color type for the raw output hslaImage. See explanation on PNG color types.
+bitdepth: the desired bit depth for the raw output hslaImage. See explanation on PNG color types.
 Return value: LodePNG error code (0 means no error).
 */
 unsigned lodepng_decode_memory(unsigned char** out, unsigned* w, unsigned* h,
                                const unsigned char* in, size_t insize,
                                LodePNGColorType colortype, unsigned bitdepth);
 
-/*Same as lodepng_decode_memory, but always decodes to 32-bit RGBA raw image*/
+/*Same as lodepng_decode_memory, but always decodes to 32-bit RGBA raw hslaImage*/
 unsigned lodepng_decode32(unsigned char** out, unsigned* w, unsigned* h,
                           const unsigned char* in, size_t insize);
 
-/*Same as lodepng_decode_memory, but always decodes to 24-bit RGB raw image*/
+/*Same as lodepng_decode_memory, but always decodes to 24-bit RGB raw hslaImage*/
 unsigned lodepng_decode24(unsigned char** out, unsigned* w, unsigned* h,
                           const unsigned char* in, size_t insize);
 
@@ -147,11 +147,11 @@ unsigned lodepng_decode_file(unsigned char** out, unsigned* w, unsigned* h,
                              const char* filename,
                              LodePNGColorType colortype, unsigned bitdepth);
 
-/*Same as lodepng_decode_file, but always decodes to 32-bit RGBA raw image.*/
+/*Same as lodepng_decode_file, but always decodes to 32-bit RGBA raw hslaImage.*/
 unsigned lodepng_decode32_file(unsigned char** out, unsigned* w, unsigned* h,
                                const char* filename);
 
-/*Same as lodepng_decode_file, but always decodes to 24-bit RGB raw image.*/
+/*Same as lodepng_decode_file, but always decodes to 24-bit RGB raw hslaImage.*/
 unsigned lodepng_decode24_file(unsigned char** out, unsigned* w, unsigned* h,
                                const char* filename);
 #endif /*LODEPNG_COMPILE_DISK*/
@@ -160,30 +160,30 @@ unsigned lodepng_decode24_file(unsigned char** out, unsigned* w, unsigned* h,
 
 #ifdef LODEPNG_COMPILE_ENCODER
 /*
-Converts raw pixel data into a PNG image in memory. The colortype and bitdepth
-  of the output PNG image cannot be chosen, they are automatically determined
+Converts raw pixel data into a PNG hslaImage in memory. The colortype and bitdepth
+  of the output PNG hslaImage cannot be chosen, they are automatically determined
   by the colortype, bitdepth and content of the input pixel data.
   Note: for 16-bit per channel colors, needs big endian format like PNG does.
-out: Output parameter. Pointer to buffer that will contain the PNG image data.
+out: Output parameter. Pointer to buffer that will contain the PNG hslaImage data.
      Must be freed after usage with free(*out).
 outsize: Output parameter. Pointer to the size in bytes of the out buffer.
-image: The raw pixel data to encode. The size of this buffer should be
+hslaImage: The raw pixel data to encode. The size of this buffer should be
        w * h * (bytes per pixel), bytes per pixel depends on colortype and bitdepth.
 w: width of the raw pixel data in pixels.
 h: height of the raw pixel data in pixels.
-colortype: the color type of the raw input image. See explanation on PNG color types.
-bitdepth: the bit depth of the raw input image. See explanation on PNG color types.
+colortype: the color type of the raw input hslaImage. See explanation on PNG color types.
+bitdepth: the bit depth of the raw input hslaImage. See explanation on PNG color types.
 Return value: LodePNG error code (0 means no error).
 */
 unsigned lodepng_encode_memory(unsigned char** out, size_t* outsize,
                                const unsigned char* image, unsigned w, unsigned h,
                                LodePNGColorType colortype, unsigned bitdepth);
 
-/*Same as lodepng_encode_memory, but always encodes from 32-bit RGBA raw image.*/
+/*Same as lodepng_encode_memory, but always encodes from 32-bit RGBA raw hslaImage.*/
 unsigned lodepng_encode32(unsigned char** out, size_t* outsize,
                           const unsigned char* image, unsigned w, unsigned h);
 
-/*Same as lodepng_encode_memory, but always encodes from 24-bit RGB raw image.*/
+/*Same as lodepng_encode_memory, but always encodes from 24-bit RGB raw hslaImage.*/
 unsigned lodepng_encode24(unsigned char** out, size_t* outsize,
                           const unsigned char* image, unsigned w, unsigned h);
 
@@ -197,11 +197,11 @@ unsigned lodepng_encode_file(const char* filename,
                              const unsigned char* image, unsigned w, unsigned h,
                              LodePNGColorType colortype, unsigned bitdepth);
 
-/*Same as lodepng_encode_file, but always encodes from 32-bit RGBA raw image.*/
+/*Same as lodepng_encode_file, but always encodes from 32-bit RGBA raw hslaImage.*/
 unsigned lodepng_encode32_file(const char* filename,
                                const unsigned char* image, unsigned w, unsigned h);
 
-/*Same as lodepng_encode_file, but always encodes from 24-bit RGB raw image.*/
+/*Same as lodepng_encode_file, but always encodes from 24-bit RGB raw hslaImage.*/
 unsigned lodepng_encode24_file(const char* filename,
                                const unsigned char* image, unsigned w, unsigned h);
 #endif /*LODEPNG_COMPILE_DISK*/
@@ -331,9 +331,9 @@ void lodepng_compress_settings_init(LodePNGCompressSettings* settings);
 
 #ifdef LODEPNG_COMPILE_PNG
 /*
-Color mode of an image. Contains all information required to decode the pixel
+Color mode of an hslaImage. Contains all information required to decode the pixel
 bits to RGBA colors. This information is the same as used in the PNG file
-format, and is used both for PNG and raw image data in LodePNG.
+format, and is used both for PNG and raw hslaImage data in LodePNG.
 */
 typedef struct LodePNGColorMode {
   /*header (IHDR)*/
@@ -403,14 +403,14 @@ unsigned lodepng_is_palette_type(const LodePNGColorMode* info);
 Loops through the palette to check this.*/
 unsigned lodepng_has_palette_alpha(const LodePNGColorMode* info);
 /*
-Check if the given color info indicates the possibility of having non-opaque pixels in the PNG image.
-Returns true if the image can have translucent or invisible pixels (it still be opaque if it doesn't use such pixels).
-Returns false if the image can only have opaque pixels.
+Check if the given color info indicates the possibility of having non-opaque pixels in the PNG hslaImage.
+Returns true if the hslaImage can have translucent or invisible pixels (it still be opaque if it doesn't use such pixels).
+Returns false if the hslaImage can only have opaque pixels.
 In detail, it returns true only if it's a color type with alpha, or has a palette with non-opaque values,
 or if "key_defined" is true.
 */
 unsigned lodepng_can_have_alpha(const LodePNGColorMode* info);
-/*Returns the byte size of a raw image buffer with given width, height and color mode*/
+/*Returns the byte size of a raw hslaImage buffer with given width, height and color mode*/
 size_t lodepng_get_raw_size(unsigned w, unsigned h, const LodePNGColorMode* color);
 
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
@@ -425,7 +425,7 @@ typedef struct LodePNGTime {
 } LodePNGTime;
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
 
-/*Information about the PNG image, except pixels, width and height.*/
+/*Information about the PNG hslaImage, except pixels, width and height.*/
 typedef struct LodePNGInfo {
   /*header (IHDR), palette (PLTE) and transparency (tRNS) chunks*/
   unsigned compression_method;/*compression method of the original file. Always 0.*/
@@ -451,7 +451,7 @@ typedef struct LodePNGInfo {
   use it to interpret these values (and convert copies of them to its chosen color model).
 
   When encoding, avoid setting this to an expensive color, such as a non-gray value
-  when the image is gray, or the compression will be worse since it will be forced to
+  when the hslaImage is gray, or the compression will be worse since it will be forced to
   write the PNG with a more expensive color mode (when auto_convert is on).
 
   The decoder does not use this background color to edit the color of pixels. This is a
@@ -561,7 +561,7 @@ typedef struct LodePNGInfo {
   error if the pixel data has non-gray pixels for a GRAY profile, or a silent less-optimal compression of the pixel
   data if the pixels could be encoded as grayscale but the ICC profile is RGB.
 
-  To avoid this do not set an ICC profile in the image unless there is a good reason for it, and when doing so
+  To avoid this do not set an ICC profile in the hslaImage unless there is a good reason for it, and when doing so
   make sure you compute it carefully to avoid the above problems.
   */
   unsigned iccp_defined;      /* Whether an iCCP chunk is present (0 = not present, 1 = present). */
@@ -686,7 +686,7 @@ typedef enum LodePNGFilterStrategy {
   /*Use filter that gives minimum sum, as described in the official PNG filter heuristic.*/
   LFS_MINSUM,
   /*Use the filter type that gives smallest Shannon entropy for this scanline. Depending
-  on the image, this is better or worse than minsum.*/
+  on the hslaImage, this is better or worse than minsum.*/
   LFS_ENTROPY,
   /*
   Brute-force-search PNG filters by compressing each filter for each scanline.
@@ -697,16 +697,16 @@ typedef enum LodePNGFilterStrategy {
   LFS_PREDEFINED
 } LodePNGFilterStrategy;
 
-/*Gives characteristics about the integer RGBA colors of the image (count, alpha channel usage, bit depth, ...),
+/*Gives characteristics about the integer RGBA colors of the hslaImage (count, alpha channel usage, bit depth, ...),
 which helps decide which color model to use for encoding.
 Used internally by default if "auto_convert" is enabled. Public because it's useful for custom algorithms.*/
 typedef struct LodePNGColorStats {
   unsigned colored; /*not grayscale*/
-  unsigned key; /*image is not opaque and color key is possible instead of full alpha*/
+  unsigned key; /*hslaImage is not opaque and color key is possible instead of full alpha*/
   unsigned short key_r; /*key values, always as 16-bit, in 8-bit case the byte is duplicated, e.g. 65535 means 255*/
   unsigned short key_g;
   unsigned short key_b;
-  unsigned alpha; /*image is not opaque and alpha channel or alpha palette required*/
+  unsigned alpha; /*hslaImage is not opaque and alpha channel or alpha palette required*/
   unsigned numcolors; /*amount of colors, up to 257. Not valid if bits == 16 or allow_palette is disabled.*/
   unsigned char palette[1024]; /*Remembers up to the first 256 RGBA colors, in no particular order, only valid when numcolors is valid*/
   unsigned bits; /*bits per channel (not for palette). 1,2 or 4 for grayscale only. 16 if 16-bit per channel required.*/
@@ -714,12 +714,12 @@ typedef struct LodePNGColorStats {
 
   /*user settings for computing/using the stats*/
   unsigned allow_palette; /*default 1. if 0, disallow choosing palette colortype in auto_choose_color, and don't count numcolors*/
-  unsigned allow_greyscale; /*default 1. if 0, choose RGB or RGBA even if the image only has gray colors*/
+  unsigned allow_greyscale; /*default 1. if 0, choose RGB or RGBA even if the hslaImage only has gray colors*/
 } LodePNGColorStats;
 
 void lodepng_color_stats_init(LodePNGColorStats* stats);
 
-/*Get a LodePNGColorStats of the image. The stats must already have been inited.
+/*Get a LodePNGColorStats of the hslaImage. The stats must already have been inited.
 Returns error code (e.g. alloc fail) or 0 if ok.*/
 unsigned lodepng_compute_color_stats(LodePNGColorStats* stats,
                                      const unsigned char* image, unsigned w, unsigned h,
@@ -740,7 +740,7 @@ typedef struct LodePNGEncoderSettings {
   Set filter_palette_zero to 0 to ensure always using your chosen strategy. Default: LFS_MINSUM*/
   LodePNGFilterStrategy filter_strategy;
   /*used if filter_strategy is LFS_PREDEFINED. In that case, this must point to a buffer with
-  the same length as the amount of scanlines in the image, and each value must <= 5. You
+  the same length as the amount of scanlines in the hslaImage, and each value must <= 5. You
   have to cleanup this buffer, LodePNG will never free it. Don't forget that filter_palette_zero
   must be set to 0 to ensure this is also used on palette or low bitdepth images.*/
   const unsigned char* predefined_filters;
@@ -770,7 +770,7 @@ typedef struct LodePNGState {
   LodePNGEncoderSettings encoder; /*the encoding settings*/
 #endif /*LODEPNG_COMPILE_ENCODER*/
   LodePNGColorMode info_raw; /*specifies the format in which you would like to get the raw pixel buffer*/
-  LodePNGInfo info_png; /*info of the PNG image obtained after decoding*/
+  LodePNGInfo info_png; /*info of the PNG hslaImage obtained after decoding*/
   unsigned error;
 } LodePNGState;
 
@@ -783,7 +783,7 @@ void lodepng_state_copy(LodePNGState* dest, const LodePNGState* source);
 #ifdef LODEPNG_COMPILE_DECODER
 /*
 Same as lodepng_decode_memory, but uses a LodePNGState to allow custom settings and
-getting much more information about the PNG image and color mode.
+getting much more information about the PNG hslaImage and color mode.
 */
 unsigned lodepng_decode(unsigned char** out, unsigned* w, unsigned* h,
                         LodePNGState* state,
@@ -1072,7 +1072,7 @@ TODO:
 [ ] partial decoding (stream processing)
 [X] let the "isFullyOpaque" function check color keys and transparent palettes too
 [X] better name for the variables "codes", "codesD", "codelengthcodes", "clcl" and "lldl"
-[ ] allow treating some errors like warnings, when image is recoverable (e.g. 69, 57, 58)
+[ ] allow treating some errors like warnings, when hslaImage is recoverable (e.g. 69, 57, 58)
 [ ] make warnings like: oob palette, checksum fail, data after iend, wrong/unknown crit chunk, no null terminator in text, ...
 [ ] error messages with line numbers (and version)
 [ ] errors in state instead of as return code?
@@ -1152,13 +1152,13 @@ simplicity, the following design choices were made: There are no dependencies
 on any external library. There are functions to decode and encode a PNG with
 a single function call, and extended versions of these functions taking a
 LodePNGState struct allowing to specify or get more information. By default
-the colors of the raw image are always RGB or RGBA, no matter what color type
+the colors of the raw hslaImage are always RGB or RGBA, no matter what color type
 the PNG file uses. To read and write files, there are simple functions to
 convert the files to/from buffers in memory.
 
 This all makes LodePNG suitable for loading textures in games, demos and small
-programs, ... It's less suitable for full fledged image editors, loading PNGs
-over network (it requires all the image data to be available before decoding can
+programs, ... It's less suitable for full fledged hslaImage editors, loading PNGs
+over network (it requires all the hslaImage data to be available before decoding can
 begin), life-critical systems, ...
 
 1.1. supported features
@@ -1166,11 +1166,11 @@ begin), life-critical systems, ...
 
 The following features are supported by the decoder:
 
-*) decoding of PNGs with any color type, bit depth and interlace mode, to a 24- or 32-bit color raw image,
+*) decoding of PNGs with any color type, bit depth and interlace mode, to a 24- or 32-bit color raw hslaImage,
    or the same color type as the PNG
-*) encoding of PNGs, from any raw image to 24- or 32-bit color, or the same color type as the raw image
+*) encoding of PNGs, from any raw hslaImage to 24- or 32-bit color, or the same color type as the raw hslaImage
 *) Adam7 interlace and deinterlace for any color type
-*) loading the image from harddisk or decoding it from a buffer from other sources than harddisk
+*) loading the hslaImage from harddisk or decoding it from a buffer from other sources than harddisk
 *) support for alpha channels, including RGBA color model, translucent palettes and color keying
 *) zlib decompression (inflate)
 *) zlib compression (deflate)
@@ -1248,7 +1248,7 @@ for all C-style structs:
 4. Decoding
 -----------
 
-Decoding converts a PNG compressed image to a raw pixel buffer.
+Decoding converts a PNG compressed hslaImage to a raw pixel buffer.
 
 Most documentation on using the decoder is at its declarations in the header
 above. For C, simple decoding can be done with functions such as
@@ -1259,17 +1259,17 @@ features.
 
 When using the LodePNGState, it uses the following fields for decoding:
 *) LodePNGInfo info_png: it stores extra information about the PNG (the input) in here
-*) LodePNGColorMode info_raw: here you can say what color mode of the raw image (the output) you want to get
+*) LodePNGColorMode info_raw: here you can say what color mode of the raw hslaImage (the output) you want to get
 *) LodePNGDecoderSettings decoder: you can specify a few extra settings for the decoder to use
 
 LodePNGInfo info_png
 --------------------
 
-After decoding, this contains extra information of the PNG image, except the actual
+After decoding, this contains extra information of the PNG hslaImage, except the actual
 pixels, width and height because these are already gotten directly from the decoder
 functions.
 
-It contains for example the original color type of the PNG image, text comments,
+It contains for example the original color type of the PNG hslaImage, text comments,
 suggested background color, etc... More details about the LodePNGInfo struct are
 at its declaration documentation.
 
@@ -1277,7 +1277,7 @@ LodePNGColorMode info_raw
 -------------------------
 
 When decoding, here you can specify which color type you want
-the resulting raw image to be. If this is different from the colortype of the
+the resulting raw hslaImage to be. If this is different from the colortype of the
 PNG, then the decoder will automatically convert the result. This conversion
 always works, except if you want it to convert a color PNG to grayscale or to
 a palette with missing colors.
@@ -1299,7 +1299,7 @@ color type information in the LodePNGInfo.
 5. Encoding
 -----------
 
-Encoding converts a raw pixel buffer to a PNG compressed image.
+Encoding converts a raw pixel buffer to a PNG compressed hslaImage.
 
 Most documentation on using the encoder is at its declarations in the header
 above. For C, simple encoding can be done with functions such as
@@ -1309,12 +1309,12 @@ various lodepng::encode functions, and lodepng::State can be used for advanced
 features.
 
 Like the decoder, the encoder can also give errors. However it gives less errors
-since the encoder input is trusted, the decoder input (a PNG image that could
+since the encoder input is trusted, the decoder input (a PNG hslaImage that could
 be forged by anyone) is not trusted.
 
 When using the LodePNGState, it uses the following fields for encoding:
 *) LodePNGInfo info_png: here you specify how you want the PNG (the output) to be.
-*) LodePNGColorMode info_raw: here you say what color type of the raw image (the input) has
+*) LodePNGColorMode info_raw: here you say what color type of the raw hslaImage (the input) has
 *) LodePNGEncoderSettings encoder: you can specify a few settings for the encoder to use
 
 LodePNGInfo info_png
@@ -1338,9 +1338,9 @@ there are translucent colors in the palette), it'll add a tRNS chunk.
 LodePNGColorMode info_raw
 -------------------------
 
-You specify the color type of the raw image that you give to the input here,
+You specify the color type of the raw hslaImage that you give to the input here,
 including a possible transparent color key and palette you happen to be using in
-your raw image data.
+your raw hslaImage data.
 
 By default, 32-bit color is assumed, meaning your input has to be in RGBA
 format with 4 bytes (unsigned chars) per pixel.
@@ -1362,7 +1362,7 @@ can encode the colors of all pixels without information loss.
 *) force_palette: if colortype is 2 or 6, you can make the encoder write a PLTE
    chunk if force_palette is true. This can used as suggested palette to convert
    to by viewers that don't support more than 256 colors (if those still exist)
-*) add_id: add text chunk "Encoder: LodePNG <version>" to the image.
+*) add_id: add text chunk "Encoder: LodePNG <version>" to the hslaImage.
 *) text_compression: default 1. If 1, it'll store texts as zTXt instead of tEXt chunks.
   zTXt chunks use zlib compression on the text. This gives a smaller result on
   large texts but a larger result on small texts (such as a single program name).
@@ -1373,12 +1373,12 @@ can encode the colors of all pixels without information loss.
 --------------------
 
 An important thing to note about LodePNG, is that the color type of the PNG, and
-the color type of the raw image, are completely independent. By default, when
-you decode a PNG, you get the result as a raw image in the color type you want,
+the color type of the raw hslaImage, are completely independent. By default, when
+you decode a PNG, you get the result as a raw hslaImage in the color type you want,
 no matter whether the PNG was encoded with a palette, grayscale or RGBA color.
-And if you encode an image, by default LodePNG will automatically choose the PNG
+And if you encode an hslaImage, by default LodePNG will automatically choose the PNG
 color type that gives good compression based on the values of colors and amount
-of colors in the image. It can be configured to let you control it instead as
+of colors in the hslaImage. It can be configured to let you control it instead as
 well, though.
 
 To be able to do this, LodePNG does conversions from one color mode to another.
@@ -1390,19 +1390,19 @@ reduction algorithm that is beyond the scope of a PNG encoder (yes, RGB to gray
 is easy, but there are multiple ways if you want to give some channels more
 weight).
 
-By default, when decoding, you get the raw image in 32-bit RGBA or 24-bit RGB
+By default, when decoding, you get the raw hslaImage in 32-bit RGBA or 24-bit RGB
 color, no matter what color type the PNG has. And by default when encoding,
 LodePNG automatically picks the best color model for the output PNG, and expects
-the input image to be 32-bit RGBA or 24-bit RGB. So, unless you want to control
+the input hslaImage to be 32-bit RGBA or 24-bit RGB. So, unless you want to control
 the color format of the images yourself, you can skip this chapter.
 
 6.1. PNG color types
 --------------------
 
-A PNG image can have many color types, ranging from 1-bit color to 64-bit color,
+A PNG hslaImage can have many color types, ranging from 1-bit color to 64-bit color,
 as well as palettized color modes. After the zlib decompression and unfiltering
-in the PNG image is done, the raw pixel data will have that color type and thus
-a certain amount of bits per pixel. If you want the output raw image after
+in the PNG hslaImage is done, the raw pixel data will have that color type and thus
+a certain amount of bits per pixel. If you want the output raw hslaImage after
 decoding to have another color type, a conversion is done by LodePNG.
 
 The PNG specification gives the following color types:
@@ -1423,13 +1423,13 @@ As explained in the sections about the encoder and decoder, you can specify
 color types and bit depths in info_png and info_raw to change the default
 behaviour.
 
-If, when decoding, you want the raw image to be something else than the default,
+If, when decoding, you want the raw hslaImage to be something else than the default,
 you need to set the color type and bit depth you want in the LodePNGColorMode,
 or the parameters colortype and bitdepth of the simple decoding function.
 
 If, when encoding, you use another color type than the default in the raw input
-image, you need to specify its color type and bit depth in the LodePNGColorMode
-of the raw image, or use the parameters colortype and bitdepth of the simple
+hslaImage, you need to specify its color type and bit depth in the LodePNGColorMode
+of the raw hslaImage, or use the parameters colortype and bitdepth of the simple
 encoding function.
 
 If, when encoding, you don't want LodePNG to choose the output PNG color type
@@ -1443,20 +1443,20 @@ LodePNG will do a color conversion, which follows the rules below, and may
 sometimes result in an error.
 
 To avoid some confusion:
--the decoder converts from PNG to raw image
--the encoder converts from raw image to PNG
--the colortype and bitdepth in LodePNGColorMode info_raw, are those of the raw image
+-the decoder converts from PNG to raw hslaImage
+-the encoder converts from raw hslaImage to PNG
+-the colortype and bitdepth in LodePNGColorMode info_raw, are those of the raw hslaImage
 -the colortype and bitdepth in the color field of LodePNGInfo info_png, are those of the PNG
 -when encoding, the color type in LodePNGInfo is ignored if auto_convert
  is enabled, it is automatically generated instead
 -when decoding, the color type in LodePNGInfo is set by the decoder to that of the original
- PNG image, but it can be ignored since the raw image has the color type you requested instead
--if the color type of the LodePNGColorMode and PNG image aren't the same, a conversion
+ PNG hslaImage, but it can be ignored since the raw hslaImage has the color type you requested instead
+-if the color type of the LodePNGColorMode and PNG hslaImage aren't the same, a conversion
  between the color types is done if the color types are supported. If it is not
  supported, an error is returned. If the types are the same, no conversion is done.
 -even though some conversions aren't supported, LodePNG supports loading PNGs from any
  colortype and saving PNGs to any colortype, sometimes it just requires preparing
- the raw image correctly before encoding.
+ the raw hslaImage correctly before encoding.
 -both encoder and decoder use the same color converter.
 
 The function lodepng_convert does the color conversion. It is available in the
@@ -1493,8 +1493,8 @@ info_raw are then ignored.
 In the PNG file format, if a less than 8-bit per pixel color type is used and the scanlines
 have a bit amount that isn't a multiple of 8, then padding bits are used so that each
 scanline starts at a fresh byte. But that is NOT true for the LodePNG raw input and output.
-The raw input image you give to the encoder, and the raw output image you get from the decoder
-will NOT have these padding bits, e.g. in the case of a 1-bit image with a width
+The raw input hslaImage you give to the encoder, and the raw output hslaImage you get from the decoder
+will NOT have these padding bits, e.g. in the case of a 1-bit hslaImage with a width
 of 7 pixels, the first pixel of the second scanline will the 8th bit of the first byte,
 not the first bit of a new byte.
 
@@ -1555,7 +1555,7 @@ length bytes data
 8.1. iterating through chunks
 -----------------------------
 
-If you have a buffer containing the PNG image data, then the first chunk (the
+If you have a buffer containing the PNG hslaImage data, then the first chunk (the
 IHDR chunk) starts at byte number 8 of that buffer. The first 8 bytes are the
 signature of the PNG and are not part of a chunk. But if you start at byte 8
 then you have a chunk, and can check the following things of it.
@@ -1581,7 +1581,7 @@ unsigned char lodepng_chunk_safetocopy(const unsigned char* chunk):
 Check if the chunk is critical in the PNG standard (only IHDR, PLTE, IDAT and IEND are).
 Check if the chunk is private (public chunks are part of the standard, private ones not).
 Check if the chunk is safe to copy. If it's not, then, when modifying data in a critical
-chunk, unsafe to copy chunks of the old image may NOT be saved in the new one if your
+chunk, unsafe to copy chunks of the old hslaImage may NOT be saved in the new one if your
 program doesn't handle that type of unknown chunk.
 
 unsigned char* lodepng_chunk_data(unsigned char* chunk):
@@ -1719,14 +1719,14 @@ int main(int argc, char *argv[]) {
   const char* filename = argc > 1 ? argv[1] : "test.png";
 
   //load and decode
-  std::vector<unsigned char> image;
+  std::vector<unsigned char> hslaImage;
   unsigned width, height;
-  unsigned error = lodepng::decode(image, width, height, filename);
+  unsigned error = lodepng::decode(hslaImage, width, height, filename);
 
   //if there's an error, display it
   if(error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 
-  //the pixels are now in the vector "image", 4 bytes per pixel, ordered RGBARGBA..., use it as texture, draw it, ...
+  //the pixels are now in the vector "hslaImage", 4 bytes per pixel, ordered RGBARGBA..., use it as texture, draw it, ...
 }
 
 10.2. decoder C example
@@ -1736,17 +1736,17 @@ int main(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
   unsigned error;
-  unsigned char* image;
+  unsigned char* hslaImage;
   size_t width, height;
   const char* filename = argc > 1 ? argv[1] : "test.png";
 
-  error = lodepng_decode32_file(&image, &width, &height, filename);
+  error = lodepng_decode32_file(&hslaImage, &width, &height, filename);
 
   if(error) printf("decoder error %u: %s\n", error, lodepng_error_text(error));
 
-  / * use image here * /
+  / * use hslaImage here * /
 
-  free(image);
+  free(hslaImage);
   return 0;
 }
 
@@ -1765,8 +1765,8 @@ state.decoder.ignore_end: ignore missing IEND chunk. May fail if this corruption
 state.decoder.color_convert: convert internal PNG color to chosen one
 state.decoder.read_text_chunks: whether to read in text metadata chunks
 state.decoder.remember_unknown_chunks: whether to read in unknown chunks
-state.info_raw.colortype: desired color type for decoded image
-state.info_raw.bitdepth: desired bit depth for decoded image
+state.info_raw.colortype: desired color type for decoded hslaImage
+state.info_raw.bitdepth: desired bit depth for decoded hslaImage
 state.info_raw....: more color settings, see struct LodePNGColorMode
 state.info_png....: no settings for decoder but ouput, see struct LodePNGInfo
 
@@ -1785,8 +1785,8 @@ state.encoder.filter_strategy: PNG filter strategy to encode with
 state.encoder.force_palette: add palette even if not encoding to one
 state.encoder.add_id: add LodePNG identifier and version as a text chunk
 state.encoder.text_compression: use compressed text chunks for metadata
-state.info_raw.colortype: color type of raw input image you provide
-state.info_raw.bitdepth: bit depth of raw input image you provide
+state.info_raw.colortype: color type of raw input hslaImage you provide
+state.info_raw.bitdepth: bit depth of raw input hslaImage you provide
 state.info_raw: more color settings, see struct LodePNGColorMode
 state.info_png.color.colortype: desired color type if auto_convert is false
 state.info_png.color.bitdepth: desired bit depth if auto_convert is false
@@ -1858,7 +1858,7 @@ https://github.com/lvandeve/lodepng
     several bugs and shrunk the implementation code. Made new samples.
 *) 6 nov 2011: (!) By default, the encoder now automatically chooses the best
     PNG color model and bit depth, based on the amount and type of colors of the
-    raw image. For this, autoLeaveOutAlphaChannel replaced by auto_choose_color.
+    raw hslaImage. For this, autoLeaveOutAlphaChannel replaced by auto_choose_color.
 *) 9 okt 2011: simpler hash chain implementation for the encoder.
 *) 8 sep 2011: lz77 encoder lazy matching instead of greedy matching.
 *) 23 aug 2011: tweaked the zlib compression parameters after benchmarking.
@@ -1935,12 +1935,12 @@ https://github.com/lvandeve/lodepng
 *) 09 dec 2006: (!) Placed output parameters of public functions as first parameter.
     Fixed a bug of the decoder with 16-bit per color.
 *) 15 okt 2006: Changed documentation structure
-*) 09 okt 2006: Encoder class added. It encodes a valid PNG image from the
-    given image buffer, however for now it's not compressed.
+*) 09 okt 2006: Encoder class added. It encodes a valid PNG hslaImage from the
+    given hslaImage buffer, however for now it's not compressed.
 *) 08 sep 2006: (!) Changed to interface with a Decoder class
 *) 30 jul 2006: (!) LodePNG_InfoPng , width and height are now retrieved in different
     way. Renamed decodePNG to decodePNGGeneric.
-*) 29 jul 2006: (!) Changed the interface: image info is now returned as a
+*) 29 jul 2006: (!) Changed the interface: hslaImage info is now returned as a
     struct of type LodePNG::LodePNG_Info, instead of a vector, which was a bit clumsy.
 *) 28 jul 2006: Cleaned the code and added new error checks.
     Corrected terminology "deflate" into "inflate".
@@ -1965,7 +1965,7 @@ https://github.com/lvandeve/lodepng
 -----------------------
 
 Feel free to contact me with suggestions, problems, comments, ... concerning
-LodePNG. If you encounter a PNG image that doesn't work properly with this
+LodePNG. If you encounter a PNG hslaImage that doesn't work properly with this
 decoder, feel free to send it and I'll use it to find and fix the problem.
 
 My email address is (puzzle the account and domain together with an @ symbol):
