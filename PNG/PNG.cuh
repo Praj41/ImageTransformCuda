@@ -20,7 +20,7 @@ namespace praj {
         bool writeFile(const std::string &fileName);
         void toRGB();
         void toHSL();
-
+        void greyscale();
     private:
         unsigned int width_{};
         unsigned int height_{};

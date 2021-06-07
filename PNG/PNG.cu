@@ -28,124 +28,136 @@ namespace praj {
         return error;
     }
 
-    __global__ void rgb2hsl(rgbaColor *in, hslaColor *out) {
+    __global__ void rgb2hsl(rgbaColor *in, hslaColor *out, unsigned int h, unsigned int w) {
 
-        unsigned int blockNum = blockIdx.y * gridDim.x + blockIdx.x;
-        unsigned int globalThreadId = blockNum * blockDim.x + threadIdx.y * blockDim.x + threadIdx.x;
+        //unsigned int blockNum = blockIdx.y * gridDim.x + blockIdx.x;
+        //unsigned int globalThreadId = blockNum * blockDim.x + threadIdx.y * blockDim.x + threadIdx.x;
 
-        const auto &rgb = in[globalThreadId];
-        auto &hsl = out[globalThreadId];
+        unsigned int x = blockDim.x * blockIdx.y + threadIdx.x;
+        unsigned int y = blockIdx.x;
 
-        double r, g, b, min, max, chroma;
+        if (y <= h && x <= w) {
 
-        // Change rgb into [0, 1]
-        r = rgb.r / 255.0;
-        g = rgb.g / 255.0;
-        b = rgb.b / 255.0;
+            const auto &rgb = in[y*w + x];
+            auto &hsl = out[y*w + x];
 
-        // HSV Calculations -- formulas sourced from https://en.wikipedia.org/wiki/HSL_and_HSV
-        // Compute constants
-        min = (r < g) ? r : g;
-        min = (min < b) ? min : b;
+            float r, g, b, minimum, maximum, chroma;
 
-        max = (r > g) ? r : g;
-        max = (max > b) ? max : b;
+            // Change rgb into [0, 1]
+            r = (float) rgb.r / 255.0f;
+            g = (float) rgb.g / 255.0f;
+            b = (float) rgb.b / 255.0f;
 
-        chroma = max - min;
+            // HSV Calculations -- formulas sourced from https://en.wikipedia.org/wiki/HSL_and_HSV
+            // Compute constants
+            minimum = min(r, min(g, b));
+            maximum = max(r, max(g, b));
 
-        // Compute A
-        hsl.a = rgb.a / 255.0;
+            chroma = maximum - minimum;
 
-        // Compute L
-        hsl.l = 0.5 * (max + min);
+            // Compute A
+            hsl.a = (float) rgb.a / 255.0f;
 
-        // Check for black, white, and shades of gray, where H is undefined,
-        // S is always 0, and L controls the shade of gray.  Mathematically, this
-        // is true when chroma == 0, but we'll use a near-zero value to account
-        // for floating point errors.
-        //
-        // This check is required here, or division by zero will occur when
-        // calculating S and H below.
-        if (chroma < 0.0001 || max < 0.0001) {
-            hsl.h = hsl.s = 0;
-            return;
-        }
+            // Compute L
+            hsl.l = 0.5f * (maximum + minimum);
 
-        // Compute S
-        hsl.s = chroma / (1 - fabs((2 * hsl.l) - 1));
-
-        // Compute H
-        if (max == r) { hsl.h = fmod((g - b) / chroma, (double) 6); }
-        else if (max == g) { hsl.h = ((b - r) / chroma) + 2; }
-        else { hsl.h = ((r - g) / chroma) + 4; }
-
-        hsl.h *= 60;
-        if (hsl.h < 0) { hsl.h += 360; }
-
-    }
-
-    __global__ void hsl2rgb(hslaColor *in, rgbaColor *out) {
-
-
-        unsigned int blockNum = blockIdx.y * gridDim.x + blockIdx.x;
-        unsigned int globalThreadId = blockNum * blockDim.x + threadIdx.y * blockDim.x + threadIdx.x;
-
-        const auto &hsl = in[globalThreadId];
-        auto &rgb = out[globalThreadId];
-
-        if (hsl.s <= 0.001) {
-            rgb.r = rgb.g = rgb.b = round(hsl.l * 255);
-        } else {
-            double c = (1 - fabs((2 * hsl.l) - 1)) * hsl.s;
-            double hh = hsl.h / 60;
-            double x = c * (1 - fabs(fmod(hh, (double) 2) - 1));
-            double r, g, b;
-
-            if (hh <= 1) {
-                r = c;
-                g = x;
-                b = 0;
-            } else if (hh <= 2) {
-                r = x;
-                g = c;
-                b = 0;
-            } else if (hh <= 3) {
-                r = 0;
-                g = c;
-                b = x;
-            } else if (hh <= 4) {
-                r = 0;
-                g = x;
-                b = c;
-            } else if (hh <= 5) {
-                r = x;
-                g = 0;
-                b = c;
-            } else {
-                r = c;
-                g = 0;
-                b = x;
+            // Check for black, white, and shades of gray, where H is undefined,
+            // S is always 0, and L controls the shade of gray.  Mathematically, this
+            // is true when chroma == 0, but we'll use a near-zero value to account
+            // for floating point errors.
+            //
+            // This check is required here, or division by zero will occur when
+            // calculating S and H below.
+            if (chroma < 0.0001f || maximum < 0.0001f) {
+                hsl.h = hsl.s = 0;
+                return;
             }
 
-            double m = hsl.l - (0.5 * c);
-            rgb.r = round((r + m) * 255);
-            rgb.g = round((g + m) * 255);
-            rgb.b = round((b + m) * 255);
-        }
+            // Compute S
+            hsl.s = chroma / (1 - fabs((2 * hsl.l) - 1));
 
-        rgb.a = round(hsl.a * 255);
+            // Compute H
+            if (maximum == r) { hsl.h = fmod((g - b) / chroma, (float) 6); }
+            else if (maximum == g) { hsl.h = ((b - r) / chroma) + 2; }
+            else { hsl.h = ((r - g) / chroma) + 4; }
+
+            hsl.h *= 60.0f;
+            if (hsl.h < 0) { hsl.h += 360; }
+        }
+    }
+
+    __global__ void hsl2rgb(hslaColor *in, rgbaColor *out, unsigned int h, unsigned int w) {
+
+
+        //unsigned int blockNum = blockIdx.y * gridDim.x + blockIdx.x;
+        //unsigned int globalThreadId = blockNum * blockDim.x + threadIdx.y * blockDim.x + threadIdx.x;
+
+        unsigned int x = blockDim.x * blockIdx.y + threadIdx.x;
+        unsigned int y = blockIdx.x;
+
+        if (y <= h && x <= w) {
+
+            const auto &hsl = in[y*w + x];
+            auto &rgb = out[y*w + x];
+
+            if (hsl.s <= 0.001) {
+                rgb.r = rgb.g = rgb.b = round((double) hsl.l * 255);
+            } else {
+                float c = (1 - fabs((2 * hsl.l) - 1)) * hsl.s;
+                float hh = hsl.h / 60;
+                float x = c * (1 - fabs(fmod(hh, (float) 2) - 1));
+                float r, g, b;
+
+                if (hh <= 1) {
+                    r = c;
+                    g = x;
+                    b = 0;
+                } else if (hh <= 2) {
+                    r = x;
+                    g = c;
+                    b = 0;
+                } else if (hh <= 3) {
+                    r = 0;
+                    g = c;
+                    b = x;
+                } else if (hh <= 4) {
+                    r = 0;
+                    g = x;
+                    b = c;
+                } else if (hh <= 5) {
+                    r = x;
+                    g = 0;
+                    b = c;
+                } else {
+                    r = c;
+                    g = 0;
+                    b = x;
+                }
+
+                float m = hsl.l - (0.5f * c);
+                rgb.r = round((double) (r + m) * 255);
+                rgb.g = round((double) (g + m) * 255);
+                rgb.b = round((double) (b + m) * 255);
+            }
+
+            rgb.a = round((double) hsl.a * 255);
+        }
     }
 
     void PNGpu::toRGB() {
 
         hslaColor *in;
-        cudaMalloc((void **) &in, height_ * width_ * 32);
-        cudaMemcpy(in, hslaImage_.data(), height_ * width_ * 32, cudaMemcpyHostToDevice);
+        cudaMalloc((void **) &in, height_ * width_ * 16);
+        cudaMemcpy(in, hslaImage_.data(), height_ * width_ * 16, cudaMemcpyHostToDevice);
         rgbaColor *out;
         cudaMalloc((void **) &out, height_ * width_ * 4);
-        praj::hsl2rgb<<<height_, width_>>>(in, out);
+        dim3 block(512, 1, 1);
+        dim3 grid(height_, (width_/512)+1);
+        praj::hsl2rgb<<<grid, block>>>(in, out, height_, width_);
         rgbaImage_.resize(height_ * width_);
-        cudaMemcpy(rgbaImage_.data(), out, height_ * width_ * 32, cudaMemcpyDeviceToHost);
+        cudaMemcpy(rgbaImage_.data(), out, height_ * width_ * 4, cudaMemcpyDeviceToHost);
+        cudaFree(in);
+        cudaFree(out);
         std::cout << "done" << std::endl;
     }
 
@@ -154,13 +166,19 @@ namespace praj {
         cudaMalloc((void **) &in, height_ * width_ * 4);
         cudaMemcpy(in, rgbaImage_.data(), height_ * width_ * 4, cudaMemcpyHostToDevice);
         hslaColor *out;
-        cudaMalloc((void **) &out, height_ * width_ * 32);
-        //dim3 block(512, 1, 1);
-        //dim3 grid(height_, width_);
-        praj::rgb2hsl<<<height_, width_>>>(in, out);
+        cudaMalloc((void **) &out, height_ * width_ * 16);
+        dim3 block(512, 1, 1);
+        dim3 grid(height_, (width_/512)+1);
+        praj::rgb2hsl<<<grid, block>>>(in, out, height_, width_);
         hslaImage_.resize(height_ * width_);
-        cudaMemcpy(hslaImage_.data(), out, height_ * width_ * 32, cudaMemcpyDeviceToHost);
+        cudaMemcpy(hslaImage_.data(), out, height_ * width_ * 16, cudaMemcpyDeviceToHost);
+        cudaFree(in);
+        cudaFree(out);
         std::cout << "done" << std::endl;
+    }
+
+    void PNGpu::greyscale() {
+
     }
 
 }

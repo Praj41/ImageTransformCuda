@@ -18,15 +18,15 @@ typedef union {
 } rgbaColor;
 
 typedef struct {
-    double h;  // angle in degrees, [0, 360]
-    double s;  // [0, 1]
-    double l;  // [0, 1]
-    double a;  // [0, 1]
+    float h;  // angle in degrees, [0, 360]
+    float s;  // [0, 1]
+    float l;  // [0, 1]
+    float a;  // [0, 1]
 } hslaColor;
 
 static hslaColor rgb2hsl(rgbaColor rgb) {
     hslaColor hsl;
-    double r, g, b, min, max, chroma;
+    float r, g, b, min, max, chroma;
 
     // Change rgb into [0, 1]
     r = rgb.r / 255.0;
@@ -83,10 +83,10 @@ static rgbaColor hsl2rgb(hslaColor hsl) {
     if (hsl.s <= 0.001) {
         rgb.r = rgb.g = rgb.b = round(hsl.l * 255);
     } else {
-        double c = (1 - fabs((2 * hsl.l) - 1)) * hsl.s;
-        double hh = hsl.h / 60;
-        double x = c * (1 - fabs(fmod(hh, 2) - 1));
-        double r, g, b;
+        float c = (1 - fabs((2 * hsl.l) - 1)) * hsl.s;
+        float hh = hsl.h / 60;
+        float x = c * (1 - fabs(fmod(hh, 2) - 1));
+        float r, g, b;
 
         if (hh <= 1) {
             r = c;
@@ -114,7 +114,7 @@ static rgbaColor hsl2rgb(hslaColor hsl) {
             b = x;
         }
 
-        double m = hsl.l - (0.5 * c);
+        float m = hsl.l - (0.5 * c);
         rgb.r = round((r + m) * 255);
         rgb.g = round((g + m) * 255);
         rgb.b = round((b + m) * 255);

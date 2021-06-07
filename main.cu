@@ -30,7 +30,7 @@ int main() {
 
     praj::PNGpu png;
 
-    png.readFile("../pattern.png");
+    png.readFile("../paattern2.png");
 
     png.toHSL();
     png.toRGB();
