@@ -144,6 +144,15 @@ namespace praj {
         }
     }
 
+    __global__ void toGrey(hslaColor *out, unsigned int h, unsigned int w) {
+        unsigned int x = blockDim.x * blockIdx.y + threadIdx.x;
+        unsigned int y = blockIdx.x;
+
+        if (y <= h && x <= w) {
+            out[y * w + x].s = 0;
+        }
+    }
+
     void PNGpu::toRGB() {
 
         hslaColor *in;
@@ -178,7 +187,15 @@ namespace praj {
     }
 
     void PNGpu::greyscale() {
-
+        hslaColor *out;
+        cudaMalloc((void **) &out, height_ * width_ * 16);
+        cudaMemcpy(out, hslaImage_.data(), height_ * width_ * 16, cudaMemcpyHostToDevice);
+        dim3 block(512, 1, 1);
+        dim3 grid(height_, (width_/512)+1);
+        praj::toGrey<<<grid, block>>>(out, height_, width_);
+        cudaMemcpy(hslaImage_.data(), out, height_ * width_ * 16, cudaMemcpyDeviceToHost);
+        cudaFree(out);
+        std::cout << "done" << std::endl;
     }
 
 }

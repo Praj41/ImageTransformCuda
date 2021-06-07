@@ -33,6 +33,7 @@ int main() {
     png.readFile("../paattern2.png");
 
     png.toHSL();
+    png.greyscale();
     png.toRGB();
 
     png.writeFile("../pattern1.png");
