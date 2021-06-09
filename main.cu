@@ -7,9 +7,9 @@
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
-
-    int x(256) , y(256);
 /*
+    int x(256) , y(256);
+
     std::vector<uint32_t> arr(x * y);
 
     for (int i = 0; i < x; ++i) {

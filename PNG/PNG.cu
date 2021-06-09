@@ -3,7 +3,6 @@
 #include <driver_types.h>
 
 #include "PNG.cuh"
-
 #include "lodepng.cuh"
 
 namespace praj {
@@ -167,10 +166,11 @@ namespace praj {
         cudaMemcpy(rgbaImage_.data(), out, height_ * width_ * 4, cudaMemcpyDeviceToHost);
         cudaFree(in);
         cudaFree(out);
-        std::cout << "done" << std::endl;
+        std::cout << "To RGB done" << std::endl;
     }
 
     void PNGpu::toHSL() {
+
         rgbaColor *in;
         cudaMalloc((void **) &in, height_ * width_ * 4);
         cudaMemcpy(in, rgbaImage_.data(), height_ * width_ * 4, cudaMemcpyHostToDevice);
@@ -183,7 +183,7 @@ namespace praj {
         cudaMemcpy(hslaImage_.data(), out, height_ * width_ * 16, cudaMemcpyDeviceToHost);
         cudaFree(in);
         cudaFree(out);
-        std::cout << "done" << std::endl;
+        std::cout << "To HSL done" << std::endl;
     }
 
     void PNGpu::greyscale() {
@@ -195,7 +195,8 @@ namespace praj {
         praj::toGrey<<<grid, block>>>(out, height_, width_);
         cudaMemcpy(hslaImage_.data(), out, height_ * width_ * 16, cudaMemcpyDeviceToHost);
         cudaFree(out);
-        std::cout << "done" << std::endl;
+        std::cout << "To Greyscale done" << std::endl;
     }
+
 
 }
