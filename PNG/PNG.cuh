@@ -21,6 +21,7 @@ namespace praj {
         void toRGB();
         void toHSL();
         void greyscale();
+        void edge();
     private:
         unsigned int width_{};
         unsigned int height_{};

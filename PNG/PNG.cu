@@ -152,6 +152,22 @@ namespace praj {
         }
     }
 
+    __global__ void edge(unsigned char *in, unsigned char *out, unsigned int h, unsigned int w) {
+        unsigned int x = blockDim.x * blockIdx.y + threadIdx.x;
+        unsigned int y = blockIdx.x;
+
+        if (y < h && x < w && x > 0 && y > 0) {
+            int val = - in[(y - 1) * w + x - 1] - in[(y - 1) * w + x] - in[(y - 1) * w + x + 1]
+            - in[(y) * w + x - 1] + 8 * in[(y) * w + x] - in[(y) * w + x + 1]
+            - in[(y + 1) * w + x - 1] - in[(y + 1) * w + x] - in[(y + 1) * w + x + 1];
+
+            val = (val < 0 ? 0 : val);
+            val = (val > 255 ? 255 : val);
+
+            out[y * w + x] = val;
+        }
+    }
+
     void PNGpu::toRGB() {
 
         hslaColor *in;
@@ -198,5 +214,30 @@ namespace praj {
         std::cout << "To Greyscale done" << std::endl;
     }
 
+    void PNGpu::edge() {
+        std::vector<unsigned char> grey(height_ * width_);
+
+        for (int i = 0; i < height_*width_; ++i) {
+            grey[i] = rgbaImage_[i].r;
+        }
+
+        unsigned char *in, *out;
+        cudaMalloc((void**) &in, height_*width_);
+        cudaMalloc((void**) &out, height_*width_);
+
+        cudaMemcpy(in, grey.data(), height_*width_, cudaMemcpyHostToDevice);
+        dim3 block(512, 1, 1);
+        dim3 grid(height_, (width_/512)+1);
+
+        praj::edge<<<grid, block>>>(in, out, height_, width_);
+
+        cudaMemcpy(grey.data(), out, height_*width_, cudaMemcpyDeviceToHost);
+
+        for (int i = 0; i < height_*width_; ++i) {
+            rgbaImage_[i].r = rgbaImage_[i].g = rgbaImage_[i].b = grey[i];
+        }
+        cudaFree(out);
+        cudaFree(in);
+    }
 
 }

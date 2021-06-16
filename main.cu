@@ -29,14 +29,16 @@ int main() {
 */
 
     praj::PNGpu png;
-
-    png.readFile("../paattern2.png");
+    std::string filename("../paattern2.png");
+    png.readFile(filename);
 
     png.toHSL();
     png.greyscale();
     png.toRGB();
+    png.writeFile(filename.substr(0, filename.size()-4) + "_greyscale.png");
+    png.edge();
 
-    png.writeFile("../pattern1.png");
+    png.writeFile(filename.substr(0, filename.size()-4) + "_edge.png");
 
     return 0;
 }
