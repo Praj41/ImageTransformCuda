@@ -1,12 +1,14 @@
 #include <iostream>
-#include <vector>
 
-#include "lodepng.cuh"
-#include "Pixel.cuh"
-#include "PNG.cuh"
+#include "transform.cuh"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
+
+    praj::transform processor;
+
+    processor.batch();
+
 /*
     int x(256) , y(256);
 
@@ -26,10 +28,10 @@ int main() {
     }
 
     lodepng::encode("../pattern.png", (unsigned char*)arr.data(), x, y);
-*/
+
 
     praj::PNGpu png;
-    std::string filename("../paattern2.png");
+    std::string filename("../Paattern2.png");
     png.readFile(filename);
 
     png.toHSL();
@@ -39,6 +41,7 @@ int main() {
     png.edge();
 
     png.writeFile(filename.substr(0, filename.size()-4) + "_edge.png");
+*/
 
     return 0;
 }
